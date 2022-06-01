@@ -5,6 +5,9 @@
  */
 import { __ } from "@wordpress/i18n";
 
+//Job List Component
+import JobListing from "./components/JobListing";
+
 /**
  * React hook that is used to mark the block wrapper element.
  * It provides all the necessary props like the class name.
@@ -37,12 +40,24 @@ import apiFetch from "@wordpress/api-fetch";
  */
 import "./editor.scss";
 
-const END_POINT = "ih/v1/filters";
+const FILTERS_END_POINT = "ih/v1/filters";
+const JOBS_END_POINT = "ih/v1/jobs";
 
 //Grabbing info form rest API
-async function fetchAndSetResponse(setAttributes) {
+async function fetchAndSetFilters(setAttributes) {
 	try {
-		const response = await apiFetch({ path: END_POINT });
+		const response = await apiFetch({ path: FILTERS_END_POINT });
+
+		response.states.unshift({
+			label: __("Select a State", "ih-top-nurse-jobs"),
+			value: "ZZ",
+		});
+
+		response.specialties.unshift({
+			label: __("Select a Specialty.", "ih-top-nurse-jobs"),
+			value: "ZZ",
+		});
+
 		setAttributes({
 			filterStates: response.states,
 			filterSpecalities: response.specialties,
@@ -50,6 +65,40 @@ async function fetchAndSetResponse(setAttributes) {
 	} catch (e) {
 		console.error("Oh no, there is an error!", { error: e });
 		setAttributes({ filterStates: [], filterSpecalities: [] });
+	}
+}
+
+//Grabbing info form rest API
+async function fetchAndSetJobListings(
+	selectedFilterState,
+	selectedFilterSpecialty,
+	setAttributes
+) {
+	function buildFetchUrl() {
+		let fetchURL = JOBS_END_POINT;
+
+		if (
+			selectedFilterState &&
+			selectedFilterSpecialty &&
+			selectedFilterState !== "ZZ" &&
+			selectedFilterSpecialty !== "ZZ"
+		) {
+			fetchURL = `${JOBS_END_POINT}?state=${selectedFilterState}&speciality=${selectedFilterSpecialty}`;
+		} else if (selectedFilterState && selectedFilterState !== "ZZ") {
+			fetchURL = `${JOBS_END_POINT}?state=${selectedFilterState}`;
+		} else if (selectedFilterSpecialty && selectedFilterSpecialty !== "ZZ") {
+			fetchURL = `${JOBS_END_POINT}?speciality=${selectedFilterSpecialty}`;
+		}
+
+		return fetchURL;
+	}
+
+	try {
+		const response = await apiFetch({ path: buildFetchUrl() });
+		setAttributes({ jobListings: response.jobs, isLoading: false });
+	} catch (e) {
+		console.error("Oh no, there is an error!", { error: e });
+		setAttributes({ jobListings: [] });
 	}
 }
 
@@ -66,13 +115,36 @@ export default function Edit({ attributes, setAttributes }) {
 		filterStates,
 		filterSpecalities,
 		selectedFilterState,
-		selectedFilterSpeciality,
+		selectedFilterSpecialty,
+		jobListings,
+		isLoading,
 	} = attributes;
 
 	useEffect(() => {
-		fetchAndSetResponse(setAttributes);
+		fetchAndSetFilters(setAttributes);
 	}, []);
 
+	useEffect(() => {
+		fetchAndSetJobListings(
+			selectedFilterState,
+			selectedFilterSpecialty,
+			setAttributes
+		);
+	}, [selectedFilterState, selectedFilterSpecialty]);
+
+	function RenderJobs(jobs) {
+		console.log("jobs", jobs);
+		if (jobs && jobs.length > 0) {
+			<ul>
+				{jobs.map(function (job, i) {
+					return <li key={i}>{job.title}</li>;
+				})}
+			</ul>;
+		} else {
+			return <p>Sorry no postings match your criteria.</p>;
+		}
+	}
+	console.log("jobListings", jobListings);
 	return (
 		<>
 			<InspectorControls>
@@ -89,19 +161,36 @@ export default function Edit({ attributes, setAttributes }) {
 					/>
 					<SelectControl
 						label={__("Specalities", "ih-top-nurse-jobs")}
-						value={selectedFilterSpeciality}
+						value={selectedFilterSpecialty}
 						options={filterSpecalities}
-						onChange={(newSpeciality) => {
+						onChange={(newSpecialty) => {
 							setAttributes({
-								selectedFilterSpeciality: newSpeciality,
+								selectedFilterSpecialty: newSpecialty,
 							});
 						}}
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<p {...useBlockProps()}>
-				{__("Ih Top Nurse Jobs – hello from the editor!", "ih-top-nurse-jobs")}
-			</p>
+			<div {...useBlockProps()}>
+				{isLoading && jobListings ? (
+					<Spinner />
+				) : (
+					<ul id="ih-top-nurse-listings" className="ih-nurse-list">
+						{jobListings &&
+							jobListings.map((job, index) => {
+								return (
+									<li key={index} className="ih-nurse-list__item">
+										<JobListing
+											title={job.title}
+											url={job.url}
+											location={job.location}
+										/>
+									</li>
+								);
+							})}
+					</ul>
+				)}
+			</div>
 		</>
 	);
 }

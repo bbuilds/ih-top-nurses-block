@@ -22,8 +22,16 @@
 		"selectedFilterState": {
 			"type": "string"
 		},
-		"selectedFilterSpecalities": {
+		"selectedFilterSpecialty": {
 			"type": "string"
+		},
+		"jobListings": {
+			"type": "array",
+			"default": []
+		},
+		"isLoading": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"textdomain": "ih-top-nurse-jobs",

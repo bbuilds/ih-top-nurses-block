@@ -25,7 +25,6 @@ function proxy_ih_jobs_api($data) {
     $state_id = $data['state'];
     $speciality_id = $data['speciality'];
 
-    // Get all posts
     if($state_id && $speciality_id) {
         $fetch_url = $api_url . '?states[]=' . $state_id . '&specialties[]=' . $speciality_id;
 	} elseif($state_id) {
