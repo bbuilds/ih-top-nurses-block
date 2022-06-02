@@ -14,7 +14,12 @@ import JobListing from "./components/JobListing";
  *
  * @see https://developer.wordpress.org/block-editor/packages/packages-block-editor/#useBlockProps
  */
-import { useBlockProps, InspectorControls } from "@wordpress/block-editor";
+import {
+	useBlockProps,
+	InspectorControls,
+	RichText,
+	InnerBlocks,
+} from "@wordpress/block-editor";
 
 /**
  * @see https://developer.wordpress.org/block-editor/reference-guides/components/spinner/
@@ -118,6 +123,7 @@ export default function Edit({ attributes, setAttributes }) {
 		selectedFilterSpecialty,
 		jobListings,
 		isLoading,
+		blockTitle,
 	} = attributes;
 
 	useEffect(() => {
@@ -132,19 +138,6 @@ export default function Edit({ attributes, setAttributes }) {
 		);
 	}, [selectedFilterState, selectedFilterSpecialty]);
 
-	function RenderJobs(jobs) {
-		console.log("jobs", jobs);
-		if (jobs && jobs.length > 0) {
-			<ul>
-				{jobs.map(function (job, i) {
-					return <li key={i}>{job.title}</li>;
-				})}
-			</ul>;
-		} else {
-			return <p>Sorry no postings match your criteria.</p>;
-		}
-	}
-	console.log("jobListings", jobListings);
 	return (
 		<>
 			<InspectorControls>
@@ -171,25 +164,63 @@ export default function Edit({ attributes, setAttributes }) {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div {...useBlockProps()}>
+			<div
+				{...useBlockProps({
+					className: "ih-top-nurses-block",
+				})}
+			>
+				<RichText
+					tagName={"h2"}
+					placeholder={__(
+						"Top nurse jobs on Incredible Health",
+						"ih-top-nurse-jobs"
+					)}
+					value={blockTitle}
+					className="ih-top-nurses-block__title"
+					onChange={(val) => {
+						setAttributes({ blockTitle: val });
+					}}
+					allowedFormats={["core/bold", "core/italic"]}
+				/>
 				{isLoading && jobListings ? (
 					<Spinner />
 				) : (
-					<ul id="ih-top-nurse-listings" className="ih-nurse-list">
+					<ul id="ih-top-nurse-listings" className="ih-top-nurses-block-list">
 						{jobListings &&
 							jobListings.map((job, index) => {
 								return (
-									<li key={index} className="ih-nurse-list__item">
+									<li key={index} className="ih-top-nurses-block-list__item">
 										<JobListing
 											title={job.title}
 											url={job.url}
 											location={job.location}
+											salary={job.salary}
 										/>
 									</li>
 								);
 							})}
 					</ul>
 				)}
+				{!jobListings ||
+					(jobListings.length <= 0 && (
+						<p>
+							{__("Sorry, no jobs match your criteria.", "ih-top-nurse-jobs")}
+						</p>
+					))}
+				<div class="ih-top-nurses-block-list__content">
+					<InnerBlocks
+						template={[
+							[
+								"core/paragraph",
+								{
+									placeholder: __("Add Optional Content…", "ih-top-nurse-jobs"),
+									align: "center",
+								},
+							],
+							["core/button"],
+						]}
+					/>
+				</div>
 			</div>
 		</>
 	);

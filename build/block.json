@@ -25,6 +25,9 @@
 		"selectedFilterSpecialty": {
 			"type": "string"
 		},
+		"blockTitle": {
+			"type": "string"
+		},
 		"jobListings": {
 			"type": "array",
 			"default": []
