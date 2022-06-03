@@ -22,16 +22,15 @@ add_action( 'rest_api_init', function () {
 function proxy_ih_jobs_api($data) {
 	$api_url = get_option('ih_top_nurse_jobs_api_list');
 	$fetch_url = $api_url;
-    $state_id = $data['state'];
-    $speciality_id = $data['speciality'];
+    $state_id = $data['state'] ?? null;
+    $speciality_id = $data['speciality'] ?? null;
 
-    if($state_id && $speciality_id) {
-        $fetch_url = $api_url . '?states[]=' . $state_id . '&specialties[]=' . $speciality_id;
-	} elseif($state_id) {
-		$fetch_url = $api_url . '?states[]=' . $state_id;
-	} elseif($speciality_id) {
-		$fetch_url = $api_url . '?specialties[]=' . $speciality_id;
-    }
+
+	$fetch_data = array('states[]' => $state_id, 'specialties[]' => $speciality_id);
+
+	if($fetch_data) {
+		$fetch_url .= '?' . http_build_query($fetch_data);
+	}
 
 	$api_response = wp_remote_get($fetch_url);
 
