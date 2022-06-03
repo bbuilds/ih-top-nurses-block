@@ -10,15 +10,25 @@
 	padding: 2px;
 }
 
-.ih-top-nurses-block-list__item {
+.ih-top-nurses-block-list {
 	list-style: none;
+	padding-left: 0 !important;
+}
+
+.ih-top-nurses-block-list__item {
+	list-style-type: none !important;
+}
+
+.wp-block-create-block-ih-top-nurse-jobs h2 {
+	font-size: 1.1em;
 }
 
 .ih-nurse-listing h3 {
 	font-size: 1.25rem;
-	margin-bottom: 0.75rem;
+	margin-bottom: 0;
 }
 
 .ih-nurse-listing p {
 	font-size: 0.875rem;
+	margin-bottom: 1rem;
 }

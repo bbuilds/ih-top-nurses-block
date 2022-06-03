@@ -3,7 +3,7 @@
  *
  * @see https://developer.wordpress.org/block-editor/packages/packages-i18n/
  */
-import { __ } from '@wordpress/i18n';
+import { __ } from "@wordpress/i18n";
 
 /**
  * React hook that is used to mark the block wrapper element.
@@ -11,7 +11,10 @@ import { __ } from '@wordpress/i18n';
  *
  * @see https://developer.wordpress.org/block-editor/packages/packages-block-editor/#useBlockProps
  */
-import { useBlockProps } from '@wordpress/block-editor';
+import { useBlockProps, RichText, InnerBlocks } from "@wordpress/block-editor";
+
+//Job List Component
+import JobListing from "./components/JobListing";
 
 /**
  * The save function defines the way in which the different attributes should
@@ -22,13 +25,30 @@ import { useBlockProps } from '@wordpress/block-editor';
  *
  * @return {WPElement} Element to render.
  */
-export default function save() {
+export default function save({ attributes }) {
+	const { jobListings, blockTitle } = attributes;
 	return (
-		<p { ...useBlockProps.save() }>
-			{ __(
-				'Ih Top Nurse Jobs – hello from the saved content!',
-				'ih-top-nurse-jobs'
-			) }
-		</p>
+		<div {...useBlockProps.save()}>
+			{blockTitle && <RichText.Content tagName="h2" value={blockTitle} />}
+
+			<ul id="ih-top-nurse-listings" className="ih-top-nurses-block-list">
+				{jobListings &&
+					jobListings.map((job, index) => {
+						return (
+							<li key={index} className="ih-top-nurses-block-list__item">
+								<JobListing
+									title={job.title}
+									url={job.url}
+									location={job.location}
+									salary={job.salary}
+								/>
+							</li>
+						);
+					})}
+			</ul>
+			<div class="ih-top-nurses-block-list__content">
+				<InnerBlocks.Content />
+			</div>
+		</div>
 	);
 }
